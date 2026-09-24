@@ -110,11 +110,11 @@ export default function BialettiSection() {
       dir="rtl"
       style={{
         background: "var(--espresso)",
-        padding: "80px 0",
+        padding: "var(--section-py) 0",
         borderTop: "1px solid var(--layer-2)",
       }}
     >
-      <div className="max-w-6xl mx-auto px-6 md:px-16">
+      <div className="max-w-7xl mx-auto px-6 md:px-16">
 
         {/* Header */}
         <motion.div

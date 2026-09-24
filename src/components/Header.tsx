@@ -5,26 +5,25 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 
 const NAV_ITEMS = [
-  { label: "קפה",         href: "#craft"   },
-  { label: "קפסולות",     href: "#specs"   },
-  { label: "מכונות קפה",  href: "#specs"   },
-  { label: "מטחנות",      href: "#specs"   },
-  { label: "Bialetti",    href: "#bialetti"},
-  { label: "לעסקים",      href: "#business"},
-  { label: "אודות",       href: "#story"   },
+  { label: "קפה",         href: "#craft"    },
+  { label: "קפסולות",     href: "#specs"    },
+  { label: "מכונות קפה",  href: "#specs"    },
+  { label: "מטחנות",      href: "#specs"    },
+  { label: "Bialetti",    href: "#bialetti" },
+  { label: "לעסקים",      href: "#business" },
+  { label: "אודות",       href: "#story"    },
 ];
 
 export default function Header() {
-  const [scrolled,   setScrolled]   = useState(false);
-  const [menuOpen,   setMenuOpen]   = useState(false);
+  const [scrolled,  setScrolled]  = useState(false);
+  const [menuOpen,  setMenuOpen]  = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 30);
+    const onScroll = () => setScrolled(window.scrollY > 60);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Prevent body scroll when mobile menu is open
   useEffect(() => {
     document.body.style.overflow = menuOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
@@ -36,22 +35,22 @@ export default function Header() {
         dir="ltr"
         style={{
           position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
+          top: 0, left: 0, right: 0,
           zIndex: 200,
           display: "flex",
           alignItems: "center",
           justifyContent: "space-between",
-          padding: "12px 32px",
-          transition: "background 0.5s ease, border-color 0.5s ease",
-          background: scrolled ? "rgba(8,5,3,0.88)" : "transparent",
-          backdropFilter: scrolled ? "blur(18px)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(18px)" : "none",
-          borderBottom: scrolled ? "1px solid var(--layer-2)" : "1px solid transparent",
+          padding: "0 32px",
+          height: 64,
+          /* Always dark + blurred — visible against any section */
+          background: scrolled ? "rgba(8,5,3,0.92)" : "rgba(8,5,3,0.72)",
+          backdropFilter: "blur(18px)",
+          WebkitBackdropFilter: "blur(18px)",
+          borderBottom: scrolled ? "1px solid var(--layer-2)" : "1px solid rgba(31,23,18,0.5)",
+          transition: "background 0.4s ease, border-color 0.4s ease",
         }}
       >
-        {/* ── Brand ─────────────────────────────────────────── */}
+        {/* ── Brand ──────────────────────────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <div
             style={{
@@ -70,17 +69,17 @@ export default function Header() {
           </div>
           <span
             className="eyebrow-latin"
-            style={{ color: "var(--parchment)", fontWeight: 400, fontSize: 12 }}
+            style={{ color: "var(--cream)", fontWeight: 500, fontSize: 12 }}
           >
             CAFFÈ VERO
           </span>
         </div>
 
-        {/* ── Desktop nav ────────────────────────────────────── */}
+        {/* ── Desktop nav ─────────────────────────────────────────── */}
         <nav
           dir="rtl"
           className="hidden lg:flex items-center"
-          style={{ gap: 28 }}
+          style={{ gap: 32 }}
         >
           {NAV_ITEMS.map(({ label, href }) => (
             <a
@@ -89,10 +88,13 @@ export default function Header() {
               data-cursor="pointer"
               className="header-nav-link"
               style={{
-                color: "var(--muted)",
-                fontSize: 12,
+                color: "var(--cream)",
+                fontSize: 15,
                 fontFamily: "var(--font-body)",
+                fontWeight: 500,
                 textDecoration: "none",
+                position: "relative",
+                paddingBottom: 3,
                 transition: "color 0.25s",
               }}
             >
@@ -101,7 +103,7 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* ── Right: phone + cart + CTA ──────────────────────── */}
+        {/* ── Right: phone + cart + CTA ───────────────────────────── */}
         <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
           {/* Phone — desktop only */}
           <a
@@ -110,7 +112,7 @@ export default function Header() {
             dir="ltr"
             style={{
               color: "var(--muted)",
-              fontSize: 11,
+              fontSize: 12,
               fontFamily: "var(--font-latin)",
               textDecoration: "none",
               letterSpacing: "0.04em",
@@ -128,7 +130,7 @@ export default function Header() {
               background: "transparent",
               border: "none",
               cursor: "pointer",
-              padding: "6px",
+              padding: "8px",
               color: "var(--parchment)",
               display: "flex",
               alignItems: "center",
@@ -142,31 +144,21 @@ export default function Header() {
             </svg>
           </button>
 
-          {/* CTA button — desktop only */}
+          {/* CTA — desktop only — solid gold */}
           <button
             data-cursor="pointer"
-            className="header-buy-btn hidden lg:block"
-            style={{
-              background: "transparent",
-              border: "1px solid rgba(200,161,101,0.4)",
-              color: "var(--gold)",
-              padding: "8px 20px",
-              minHeight: 38,
-              fontSize: 12,
-              cursor: "pointer",
-              transition: "background 0.3s ease, color 0.3s ease, border-color 0.3s ease",
-              fontFamily: "var(--font-body)",
-              fontWeight: 400,
-            }}
+            onClick={() => { window.location.href = "#business"; }}
+            className="btn-primary hidden lg:block"
+            style={{ padding: "0 22px", minHeight: 40, fontSize: 13 }}
           >
             צור קשר
           </button>
 
-          {/* Hamburger — mobile only */}
+          {/* Hamburger — mobile/tablet */}
           <button
             data-cursor="pointer"
             onClick={() => setMenuOpen((v) => !v)}
-            aria-label="פתח תפריט"
+            aria-label={menuOpen ? "סגור תפריט" : "פתח תפריט"}
             className="lg:hidden"
             style={{
               background: "transparent",
@@ -181,31 +173,38 @@ export default function Header() {
           >
             <motion.span
               animate={menuOpen ? { rotate: 45, y: 7 } : { rotate: 0, y: 0 }}
-              style={{ display: "block", width: 22, height: 1, background: "var(--parchment)", transformOrigin: "center" }}
+              style={{ display: "block", width: 22, height: 1, background: "var(--cream)", transformOrigin: "center" }}
             />
             <motion.span
               animate={menuOpen ? { opacity: 0 } : { opacity: 1 }}
-              style={{ display: "block", width: 16, height: 1, background: "var(--parchment)" }}
+              style={{ display: "block", width: 16, height: 1, background: "var(--cream)" }}
             />
             <motion.span
               animate={menuOpen ? { rotate: -45, y: -7 } : { rotate: 0, y: 0 }}
-              style={{ display: "block", width: 22, height: 1, background: "var(--parchment)", transformOrigin: "center" }}
+              style={{ display: "block", width: 22, height: 1, background: "var(--cream)", transformOrigin: "center" }}
             />
           </button>
         </div>
 
-        {/* Hover styles */}
+        {/* Hover styles for nav links */}
         <style>{`
-          .header-nav-link:hover { color: var(--cream) !important; }
-          .header-buy-btn:hover {
-            background: var(--gold) !important;
-            color: var(--espresso) !important;
-            border-color: var(--gold) !important;
+          .header-nav-link { opacity: 0.75; }
+          .header-nav-link:hover { opacity: 1; color: var(--cream) !important; }
+          .header-nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 1px;
+            background: var(--gold);
+            transform: scaleX(0);
+            transform-origin: right;
+            transition: transform 0.3s ease;
           }
+          .header-nav-link:hover::after { transform: scaleX(1); transform-origin: left; }
         `}</style>
       </header>
 
-      {/* ── Mobile full-screen overlay menu ─────────────────── */}
+      {/* ── Mobile full-screen overlay menu ────────────────────────── */}
       <AnimatePresence>
         {menuOpen && (
           <motion.div
@@ -220,16 +219,15 @@ export default function Header() {
               zIndex: 199,
               background: "rgba(8,5,3,0.97)",
               backdropFilter: "blur(24px)",
+              WebkitBackdropFilter: "blur(24px)",
               display: "flex",
               flexDirection: "column",
               alignItems: "flex-start",
               justifyContent: "center",
               padding: "80px 32px 40px",
-              gap: 8,
+              gap: 4,
             }}
-            onClick={(e) => {
-              if (e.target === e.currentTarget) setMenuOpen(false);
-            }}
+            onClick={(e) => { if (e.target === e.currentTarget) setMenuOpen(false); }}
           >
             {NAV_ITEMS.map(({ label, href }, i) => (
               <motion.a
@@ -244,9 +242,9 @@ export default function Header() {
                   display: "block",
                   color: "var(--cream)",
                   fontSize: "clamp(1.6rem, 6vw, 2.2rem)",
-                  fontWeight: 400,
+                  fontWeight: 500,
                   textDecoration: "none",
-                  padding: "10px 0",
+                  padding: "12px 0",
                   borderBottom: "1px solid var(--layer-2)",
                   width: "100%",
                   transition: "color 0.2s",
@@ -257,18 +255,17 @@ export default function Header() {
               </motion.a>
             ))}
 
-            {/* Contact info in mobile menu */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.4, delay: 0.5 }}
-              style={{ marginTop: 32, display: "flex", flexDirection: "column", gap: 8 }}
+              style={{ marginTop: 36, display: "flex", flexDirection: "column", gap: 10 }}
             >
               <a
                 href="tel:049978836"
                 dir="ltr"
-                style={{ color: "var(--muted)", fontSize: 13, fontFamily: "var(--font-latin)", textDecoration: "none" }}
+                style={{ color: "var(--muted)", fontSize: 14, fontFamily: "var(--font-latin)", textDecoration: "none" }}
               >
                 04-9978836
               </a>

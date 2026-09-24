@@ -98,7 +98,7 @@ function FeatureBlock({
       transition={{ duration: 0.9, delay: index * 0.12, ease: [0.25, 0.1, 0.25, 1] }}
       className="border-r border-[#2a2318] pr-8 py-2"
     >
-      <h3 className="text-lg font-light mb-3" style={{ color: "var(--parchment)" }}>{title}</h3>
+      <h3 className="text-lg font-medium mb-3" style={{ color: "var(--parchment)" }}>{title}</h3>
       <p className="text-sm leading-7" style={{ color: "var(--muted)", fontFamily: "var(--font-body)" }}>{body}</p>
     </motion.div>
   );
@@ -112,7 +112,7 @@ export default function SpecsSection() {
       className="section-warm pt-32 pb-24 px-6 md:px-16 lg:px-24"
     >
       {/* Heading */}
-      <div className="max-w-5xl mx-auto mb-20">
+      <div className="max-w-7xl mx-auto mb-20">
         {/* Hebrew eyebrow — no letter-spacing */}
         <motion.p
           variants={fadeUp}
@@ -131,7 +131,7 @@ export default function SpecsSection() {
           whileInView="visible"
           viewport={{ once: true }}
           transition={{ duration: 1, delay: 0.2 }}
-          className="text-[clamp(2rem,6vw,5rem)] font-light leading-tight"
+          className="text-[clamp(2rem,6vw,5rem)] font-medium leading-tight"
           style={{ color: "var(--cream)" }}
         >
           הכל תחת קורת גג
@@ -141,21 +141,21 @@ export default function SpecsSection() {
       </div>
 
       {/* Spec grid */}
-      <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#120805] mb-24">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-px bg-[#120805] mb-24">
         {specs.map((s, i) => (
           <SpecCard key={s.label} {...s} index={i} />
         ))}
       </div>
 
       {/* Divider */}
-      <div className="max-w-5xl mx-auto mb-20 flex items-center gap-6">
+      <div className="max-w-7xl mx-auto mb-20 flex items-center gap-6">
         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#2a2318] to-transparent" />
         <span className="text-[#2a2318] text-lg">◆</span>
         <div className="flex-1 h-px bg-gradient-to-r from-transparent via-[#2a2318] to-transparent" />
       </div>
 
       {/* Feature blocks */}
-      <div id="craft" className="max-w-5xl mx-auto grid md:grid-cols-3 gap-10 mb-28">
+      <div id="craft" className="max-w-7xl mx-auto grid md:grid-cols-3 gap-10 mb-28">
         {features.map((f, i) => (
           <FeatureBlock key={f.title} {...f} index={i} />
         ))}
@@ -182,7 +182,7 @@ function CtaBlock() {
       whileInView="visible"
       viewport={{ once: true }}
       transition={{ duration: 1 }}
-      className="max-w-5xl mx-auto text-center border border-[#1e1a14] p-16 relative overflow-hidden"
+      className="max-w-7xl mx-auto text-center border border-[#1e1a14] p-16 relative overflow-hidden"
     >
       {corners.map((cls, i) => (
         <div key={i} className={`absolute w-8 h-8 border-[#e6c27a]/50 ${cls}`} />
@@ -193,7 +193,7 @@ function CtaBlock() {
         Vero Cafe · Israel
       </p>
       {/* Hebrew heading — no letter-spacing */}
-      <h2 className="text-[clamp(1.8rem,5vw,3.5rem)] font-light mb-4" style={{ color: "var(--cream)" }}>
+      <h2 className="text-[clamp(1.8rem,5vw,3.5rem)] font-medium mb-4" style={{ color: "var(--cream)" }}>
         מוכנים למכונה החדשה?
       </h2>
       <p className="text-sm mb-10 max-w-md mx-auto leading-7" style={{ color: "var(--muted)", fontFamily: "var(--font-body)" }}>
@@ -216,7 +216,7 @@ function CtaBlock() {
           whileHover={{ scale: 1.03 }}
           whileTap={{ scale: 0.97 }}
           className="px-10 py-4 border text-xs transition-all duration-300 specs-cta-ghost"
-          style={{ borderColor: "var(--layer-2)", color: "var(--muted)", minHeight: 48 }}
+          style={{ borderColor: "rgba(245,237,226,0.35)", color: "var(--cream)", minHeight: 48 }}
         >
           צרו קשר
         </motion.button>

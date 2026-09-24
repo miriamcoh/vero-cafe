@@ -110,9 +110,11 @@ function ReadyTrigger({ onReady }: { onReady: () => void }) {
 function SceneControls({
   controlsApiRef,
   onReady,
+  enableRotate = true,
 }: {
   controlsApiRef?: React.MutableRefObject<ControlsApi | null>;
   onReady: () => void;
+  enableRotate?: boolean;
 }) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const orbitRef = useRef<any>(null);
@@ -184,6 +186,7 @@ function SceneControls({
         enableDamping
         dampingFactor={0.08}
         enableZoom={false}      /* zoom via Ctrl+wheel + buttons only */
+        enableRotate={enableRotate}
         autoRotate
         autoRotateSpeed={0.6}
         minDistance={2.5}
@@ -202,9 +205,10 @@ function SceneControls({
 interface Props {
   onReady: () => void;
   controlsApiRef?: React.MutableRefObject<ControlsApi | null>;
+  enableRotate?: boolean;
 }
 
-export default function HeroCanvas({ onReady, controlsApiRef }: Props) {
+export default function HeroCanvas({ onReady, controlsApiRef, enableRotate = true }: Props) {
   return (
     <Canvas
       camera={{ position: [0, 0.1, 4], fov: 42 }}
@@ -240,7 +244,7 @@ export default function HeroCanvas({ onReady, controlsApiRef }: Props) {
         <group position={[0, -0.25, 0]}>
           <Machine />
         </group>
-        <SceneControls controlsApiRef={controlsApiRef} onReady={onReady} />
+        <SceneControls controlsApiRef={controlsApiRef} onReady={onReady} enableRotate={enableRotate} />
       </Suspense>
     </Canvas>
   );

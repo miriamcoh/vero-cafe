@@ -17,9 +17,9 @@ export default function StorySection() {
   return (
     <section
       id="story"
-      className="section-warm py-28 px-6 md:px-16 lg:px-24 overflow-hidden"
+      className="section-warm py-20 lg:py-[140px] px-6 md:px-16 overflow-hidden"
     >
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
 
         {/* Hebrew eyebrow — no letter-spacing */}
         <motion.p

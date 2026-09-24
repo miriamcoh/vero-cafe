@@ -76,10 +76,10 @@ export default function CategoriesGrid() {
       dir="rtl"
       style={{
         background: "var(--espresso)",
-        padding: "80px 0",
+        padding: "var(--section-py) 0",
       }}
     >
-      <div className="max-w-6xl mx-auto px-6 md:px-16">
+      <div className="max-w-7xl mx-auto px-6 md:px-16">
 
         {/* Section header */}
         <motion.div

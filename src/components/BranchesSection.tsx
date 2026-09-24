@@ -50,9 +50,9 @@ export default function BranchesSection() {
     <section
       id="branches"
       dir="rtl"
-      className="section-warm py-20 px-6 md:px-16"
+      className="section-warm py-20 lg:py-[140px] px-6 md:px-16"
     >
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24">
 

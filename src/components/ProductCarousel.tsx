@@ -10,7 +10,7 @@ const PRODUCTS = [
     name: "CAFFÈ VERO Viaggio",
     sub: "500 גרם",
     price: "₪50",
-    gradient: "radial-gradient(ellipse 80% 80% at 40% 55%, rgba(110,55,15,0.85) 0%, rgba(8,5,3,0.98) 100%)",
+    gradient: "radial-gradient(ellipse 80% 80% at 40% 55%, rgba(110,55,15,0.85) 0%, rgba(31,23,18,1) 100%)",
     accent: "var(--gold)",
   },
   {
@@ -19,7 +19,7 @@ const PRODUCTS = [
     name: "EUREKA Mignon Specialita",
     sub: "כרום · מקצועית",
     price: "₪2,390",
-    gradient: "radial-gradient(ellipse 70% 70% at 55% 45%, rgba(180,170,160,0.25) 0%, rgba(8,5,3,0.98) 100%)",
+    gradient: "radial-gradient(ellipse 70% 70% at 55% 45%, rgba(180,170,160,0.25) 0%, rgba(31,23,18,1) 100%)",
     accent: "var(--cream)",
   },
   {
@@ -28,7 +28,7 @@ const PRODUCTS = [
     name: "ECM V-Titan 64",
     sub: "On-Demand · מקצועי",
     price: "₪5,790",
-    gradient: "radial-gradient(ellipse 70% 70% at 45% 50%, rgba(60,60,65,0.7) 0%, rgba(8,5,3,0.98) 100%)",
+    gradient: "radial-gradient(ellipse 70% 70% at 45% 50%, rgba(60,60,65,0.7) 0%, rgba(31,23,18,1) 100%)",
     accent: "var(--parchment)",
   },
   {
@@ -37,7 +37,7 @@ const PRODUCTS = [
     name: "Bialetti Moka Exclusive",
     sub: "3 כוסות · כחול פסטל",
     price: "₪191",
-    gradient: "radial-gradient(ellipse 70% 70% at 50% 40%, rgba(80,110,160,0.5) 0%, rgba(8,5,3,0.98) 100%)",
+    gradient: "radial-gradient(ellipse 70% 70% at 50% 40%, rgba(80,110,160,0.5) 0%, rgba(31,23,18,1) 100%)",
     accent: "#90aadc",
   },
   {
@@ -46,7 +46,7 @@ const PRODUCTS = [
     name: "עוגיות חמאה LOISON",
     sub: "מארז פח · 120 גרם",
     price: "₪40",
-    gradient: "radial-gradient(ellipse 70% 70% at 50% 50%, rgba(160,130,50,0.55) 0%, rgba(8,5,3,0.98) 100%)",
+    gradient: "radial-gradient(ellipse 70% 70% at 50% 50%, rgba(160,130,50,0.55) 0%, rgba(31,23,18,1) 100%)",
     accent: "var(--copper)",
   },
 ] as const;
@@ -78,7 +78,7 @@ export default function ProductCarousel() {
       dir="rtl"
       style={{
         background: "var(--espresso)",
-        padding: "80px 0",
+        padding: "var(--section-py) 0",
         overflow: "hidden",
       }}
     >
@@ -106,7 +106,7 @@ export default function ProductCarousel() {
         ))}
       </AnimatePresence>
 
-      <div className="max-w-6xl mx-auto px-6 md:px-16">
+      <div className="max-w-7xl mx-auto px-6 md:px-16">
 
         {/* Header row */}
         <div
@@ -210,6 +210,7 @@ export default function ProductCarousel() {
                 scrollSnapAlign: "start",
                 background: product.gradient,
                 border: "1px solid var(--layer-2)",
+                borderRadius: 12,
                 display: "flex",
                 flexDirection: "column",
                 overflow: "hidden",
@@ -290,10 +291,10 @@ export default function ProductCarousel() {
                     dir="ltr"
                     style={{
                       fontFamily: "var(--font-latin)",
-                      fontSize: 18,
-                      fontWeight: 400,
+                      fontSize: 22,
+                      fontWeight: 500,
                       color: "var(--gold)",
-                      letterSpacing: "0.02em",
+                      letterSpacing: "0.01em",
                     }}
                   >
                     {product.price}
@@ -303,14 +304,16 @@ export default function ProductCarousel() {
                     data-cursor="pointer"
                     className="add-to-cart-btn"
                     style={{
-                      background: "transparent",
-                      border: "1px solid rgba(200,161,101,0.3)",
-                      color: "var(--gold)",
+                      background: "var(--gold)",
+                      border: "1px solid var(--gold)",
+                      color: "#0E0A08",
                       fontFamily: "var(--font-body)",
-                      fontSize: 11,
-                      padding: "8px 14px",
+                      fontSize: 12,
+                      fontWeight: 600,
+                      padding: "9px 16px",
                       cursor: "pointer",
-                      transition: "background 0.3s, color 0.3s, border-color 0.3s",
+                      borderRadius: 6,
+                      transition: "opacity 0.25s",
                     }}
                   >
                     הוסף לסל
@@ -325,11 +328,7 @@ export default function ProductCarousel() {
       <style>{`
         .carousel-hide-scrollbar::-webkit-scrollbar { display: none; }
         .carousel-arrow:hover { border-color: var(--gold) !important; color: var(--gold) !important; }
-        .add-to-cart-btn:hover {
-          background: var(--gold) !important;
-          color: var(--espresso) !important;
-          border-color: var(--gold) !important;
-        }
+        .add-to-cart-btn:hover { opacity: 0.82; }
       `}</style>
     </section>
   );
