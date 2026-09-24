@@ -1,24 +1,28 @@
 "use client";
 
-import { Suspense, useEffect, useRef, RefObject } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { useGLTF, Center, Environment } from "@react-three/drei";
+import { Suspense, useEffect, useRef, RefObject, useCallback } from "react";
+import { Canvas, useFrame, useThree } from "@react-three/fiber";
+import { useGLTF, Center, Environment, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import CoffeeBeans from "./CoffeeBeans";
 
 /* ─────────────────────────────────────────────────────────────────
-   Machine with clearcoat PBR + manual auto-rotation + mouse parallax
+   Public API exposed to HeroSection for overlay buttons
 ───────────────────────────────────────────────────────────────── */
-function Machine({
-  mouseRef,
-}: {
-  mouseRef: RefObject<{ x: number; y: number }>;
-}) {
+export interface ControlsApi {
+  zoomIn(): void;
+  zoomOut(): void;
+  reset(): void;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   Machine — clearcoat PBR + gentle float bob
+   Rotation is now fully handled by OrbitControls.
+───────────────────────────────────────────────────────────────── */
+function Machine() {
   const groupRef = useRef<THREE.Group>(null);
-  const autoRotY = useRef(0);
   const { scene } = useGLTF("/espresso_coffee_machine.glb");
 
-  // Upgrade materials to MeshPhysicalMaterial for clearcoat + chrome sheen
   useEffect(() => {
     scene.traverse((obj) => {
       const mesh = obj as THREE.Mesh;
@@ -33,11 +37,9 @@ function Machine({
         if (!std.isMeshStandardMaterial) return;
 
         let phys: THREE.MeshPhysicalMaterial;
-
         if ((std as THREE.MeshPhysicalMaterial).isMeshPhysicalMaterial) {
           phys = std as THREE.MeshPhysicalMaterial;
         } else {
-          // Create a physical material that inherits the original properties
           phys = new THREE.MeshPhysicalMaterial({
             map:          std.map,
             normalMap:    std.normalMap,
@@ -53,12 +55,9 @@ function Machine({
             mesh.material = phys;
           }
         }
-
-        // Premium chrome / stainless steel finish
         phys.clearcoat           = 1.0;
         phys.clearcoatRoughness  = 0.06;
         phys.envMapIntensity     = 3.5;
-        // Boost metallic materials only (don't wash out plastic/rubber parts)
         if (phys.metalness > 0.3 || phys.roughness < 0.4) {
           phys.metalness = Math.max(phys.metalness, 0.72);
           phys.roughness = Math.min(phys.roughness, 0.22);
@@ -68,29 +67,10 @@ function Machine({
     });
   }, [scene]);
 
+  // Gentle float bob — OrbitControls handles all rotation
   useFrame((state) => {
     if (!groupRef.current) return;
-    const t = state.clock.elapsedTime;
-    const mx = mouseRef.current?.x ?? 0;
-    const my = mouseRef.current?.y ?? 0;
-
-    // Slow auto-rotation
-    autoRotY.current += 0.003;
-
-    // Target: base auto-rotation + subtle mouse parallax on X and Y
-    groupRef.current.rotation.y = THREE.MathUtils.lerp(
-      groupRef.current.rotation.y,
-      autoRotY.current + mx * 0.12,
-      0.04
-    );
-    groupRef.current.rotation.x = THREE.MathUtils.lerp(
-      groupRef.current.rotation.x,
-      my * 0.08,
-      0.04
-    );
-
-    // Gentle levitation
-    groupRef.current.position.y = Math.sin(t * 0.4) * 0.06;
+    groupRef.current.position.y = Math.sin(state.clock.elapsedTime * 0.4) * 0.06;
   });
 
   return (
@@ -105,14 +85,126 @@ function Machine({
 useGLTF.preload("/espresso_coffee_machine.glb");
 
 /* ─────────────────────────────────────────────────────────────────
+   ReadyTrigger — fires onReady after the FIRST rendered frame.
+   Co-located in the Machine Suspense so it fires only post-load.
+───────────────────────────────────────────────────────────────── */
+function ReadyTrigger({ onReady }: { onReady: () => void }) {
+  const fired = useRef(false);
+  const cbRef = useRef(onReady);
+  useEffect(() => { cbRef.current = onReady; }, [onReady]);
+
+  useFrame(() => {
+    if (!fired.current) {
+      fired.current = true;
+      cbRef.current();
+    }
+  });
+  return null;
+}
+
+/* ─────────────────────────────────────────────────────────────────
+   SceneControls — OrbitControls + zoom/reset API + autoRotate idle
+   Must be inside Canvas (uses useThree).
+   Placed in the Machine Suspense so it mounts only after GLB loads.
+───────────────────────────────────────────────────────────────── */
+function SceneControls({
+  controlsApiRef,
+  onReady,
+}: {
+  controlsApiRef?: React.MutableRefObject<ControlsApi | null>;
+  onReady: () => void;
+}) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const orbitRef = useRef<any>(null);
+  const { camera } = useThree();
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  /* Expose zoom/reset API to HeroSection overlay buttons */
+  useEffect(() => {
+    if (!controlsApiRef) return;
+
+    controlsApiRef.current = {
+      zoomIn() {
+        const c = orbitRef.current;
+        if (!c) return;
+        const dist = camera.position.distanceTo(c.target as THREE.Vector3);
+        const newDist = Math.max(2.5, dist * 0.82);
+        const dir = camera.position.clone().sub(c.target as THREE.Vector3).normalize();
+        camera.position.copy(c.target as THREE.Vector3).addScaledVector(dir, newDist);
+        c.update();
+      },
+      zoomOut() {
+        const c = orbitRef.current;
+        if (!c) return;
+        const dist = camera.position.distanceTo(c.target as THREE.Vector3);
+        const newDist = Math.min(6.5, dist * 1.22);
+        const dir = camera.position.clone().sub(c.target as THREE.Vector3).normalize();
+        camera.position.copy(c.target as THREE.Vector3).addScaledVector(dir, newDist);
+        c.update();
+      },
+      reset() {
+        orbitRef.current?.reset();
+      },
+    };
+
+    return () => {
+      controlsApiRef.current = null;
+    };
+  }, [camera, controlsApiRef]);
+
+  /* autoRotate idle: stop on drag, resume after 4 s */
+  const handleStart = useCallback(() => {
+    clearTimeout(idleTimer.current);
+    if (orbitRef.current) orbitRef.current.autoRotate = false;
+  }, []);
+
+  const handleEnd = useCallback(() => {
+    idleTimer.current = setTimeout(() => {
+      if (orbitRef.current) orbitRef.current.autoRotate = true;
+    }, 4000);
+  }, []);
+
+  useEffect(() => {
+    const controls = orbitRef.current;
+    if (!controls) return;
+    controls.addEventListener("start", handleStart);
+    controls.addEventListener("end",   handleEnd);
+    return () => {
+      controls.removeEventListener("start", handleStart);
+      controls.removeEventListener("end",   handleEnd);
+    };
+  }, [handleStart, handleEnd]);
+
+  return (
+    <>
+      <OrbitControls
+        ref={orbitRef}
+        makeDefault
+        enablePan={false}
+        enableDamping
+        dampingFactor={0.08}
+        enableZoom={false}      /* zoom via Ctrl+wheel + buttons only */
+        autoRotate
+        autoRotateSpeed={0.6}
+        minDistance={2.5}
+        maxDistance={6.5}
+        minPolarAngle={Math.PI * 0.2}
+        maxPolarAngle={Math.PI * 0.78}
+      />
+      <ReadyTrigger onReady={onReady} />
+    </>
+  );
+}
+
+/* ─────────────────────────────────────────────────────────────────
    Canvas — exported for dynamic import (ssr: false)
 ───────────────────────────────────────────────────────────────── */
 interface Props {
-  mouseRef: RefObject<{ x: number; y: number }>;
   onReady: () => void;
+  controlsApiRef?: React.MutableRefObject<ControlsApi | null>;
 }
 
-export default function HeroCanvas({ mouseRef, onReady }: Props) {
+export default function HeroCanvas({ onReady, controlsApiRef }: Props) {
   return (
     <Canvas
       camera={{ position: [0, 0.1, 4], fov: 42 }}
@@ -121,39 +213,34 @@ export default function HeroCanvas({ mouseRef, onReady }: Props) {
         toneMapping: THREE.ACESFilmicToneMapping,
         toneMappingExposure: 2.6,
       }}
-      onCreated={onReady}
       style={{ width: "100%", height: "100%" }}
     >
-      {/* Studio environment for reflections */}
+      {/* Dark canvas background — never shows white even before first draw */}
+      <color attach="background" args={["#0E0A08"]} />
+
       <Suspense fallback={null}>
         <Environment preset="studio" environmentIntensity={2.0} />
       </Suspense>
 
-      {/* Warm base fill */}
       <ambientLight intensity={0.35} color="#1a100a" />
-
-      {/* Dramatic key light — top-right warm */}
       <directionalLight position={[4, 8, 3]}   intensity={9}  color="#ffe0a0" />
-      {/* Cool fill — opposite side for separation */}
       <directionalLight position={[-4, 3, 2]}  intensity={4}  color="#c8dcff" />
-      {/* Rear rim light — chrome edge highlight */}
       <directionalLight position={[-1, 6, -5]} intensity={14} color="#eef6ff" />
-      {/* Under fill — subtle warm ground bounce */}
       <directionalLight position={[1, -4, -3]} intensity={3}  color="#c07030" />
-      {/* Spout point light — orange glow */}
-      <pointLight position={[0.3, 0.05, 1.5]} intensity={14} color="#ff8800" distance={2.0} decay={2} />
-      <pointLight position={[-0.4, 0.5, 1.2]} intensity={5}  color="#ffaa44" distance={1.8} decay={2} />
+      <pointLight position={[0.3, 0.05, 1.5]}  intensity={14} color="#ff8800" distance={2.0} decay={2} />
+      <pointLight position={[-0.4, 0.5, 1.2]}  intensity={5}  color="#ffaa44" distance={1.8} decay={2} />
 
-      {/* 3-D content */}
       <Suspense fallback={null}>
         <CoffeeBeans />
       </Suspense>
 
-      {/* Machine offset to left so text panel has clear space on the right */}
+      {/* Machine + OrbitControls + ReadyTrigger share one Suspense:
+          SceneControls mounts only after the GLB finishes loading */}
       <Suspense fallback={null}>
-        <group position={[-0.6, -0.15, 0]}>
-          <Machine mouseRef={mouseRef} />
+        <group position={[0, -0.25, 0]}>
+          <Machine />
         </group>
+        <SceneControls controlsApiRef={controlsApiRef} onReady={onReady} />
       </Suspense>
     </Canvas>
   );

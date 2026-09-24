@@ -24,7 +24,7 @@ export default function NotFound() {
           position: "absolute",
           fontFamily: "var(--font-latin)",
           fontSize: "clamp(8rem, 28vw, 20rem)",
-          fontWeight: 300,
+          fontWeight: 400,
           color: "rgba(200,161,101,0.04)",
           userSelect: "none",
           pointerEvents: "none",
@@ -53,7 +53,7 @@ export default function NotFound() {
           style={{
             fontFamily: "var(--font-heading)",
             fontSize: "clamp(1.8rem, 5vw, 3.2rem)",
-            fontWeight: 300,
+            fontWeight: 500,
             color: "var(--cream)",
             lineHeight: 1.2,
             marginBottom: 16,

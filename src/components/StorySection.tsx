@@ -49,7 +49,7 @@ export default function StorySection() {
               style={{
                 fontFamily: "var(--font-latin)",
                 fontSize: "clamp(5rem, 14vw, 9rem)",
-                fontWeight: 300,
+                fontWeight: 400,
                 lineHeight: 0.9,
                 color: "var(--gold)",
                 opacity: 0.18,
@@ -78,7 +78,7 @@ export default function StorySection() {
               whileInView="visible"
               viewport={{ once: true }}
               transition={{ duration: 1, delay: 0.15 }}
-              className="text-[clamp(1.8rem,5vw,4rem)] font-light leading-tight mb-8"
+              className="text-[clamp(1.8rem,5vw,4rem)] font-medium leading-tight mb-8"
               style={{ color: "var(--cream)" }}
             >
               חברה גדולה
@@ -160,7 +160,7 @@ export default function StorySection() {
                 style={{
                   color: "var(--cream)",
                   fontSize: "clamp(1rem, 2vw, 1.3rem)",
-                  fontWeight: 300,
+                  fontWeight: 400,
                   lineHeight: 1.2,
                 }}
               >

@@ -5,12 +5,12 @@
   --espresso:  #0E0A08;
   --layer-1:   #17110D;
   --layer-2:   #1F1712;
-  --layer-3:   #261B14;
-  --cream:     #F3E9DC;
-  --parchment: #B8A895;
-  --muted:     #7A6A5A;
-  --gold:      #C8A165;
-  --copper:    #A0643C;
+  --layer-3:   #2A1F16;
+  --cream:     #F5EDE2;   /* headings — bright, high contrast           */
+  --parchment: #E6DACB;   /* body text — warm, readable (was #B8A895)   */
+  --muted:     #C9BBA8;   /* secondary text (was #7A6A5A — too dark)     */
+  --gold:      #E0BD82;   /* accent only — brighter (was #C8A165)        */
+  --copper:    #B87040;
 }
 
 /* Register with Tailwind v4 so utility classes work */
@@ -29,12 +29,15 @@
 
 html {
   scroll-behavior: smooth;
+  background: #0E0A08; /* prevent white flash before CSS vars resolve */
 }
 
 body {
   background: var(--espresso);
-  color: var(--cream);
+  color: var(--parchment);          /* default body text */
   font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 17px;                  /* minimum readable size */
+  line-height: 1.65;
   overflow-x: hidden;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
@@ -48,7 +51,13 @@ body {
 /* ─── Typography ─────────────────────────────────────────────────── */
 h1, h2, h3, h4 {
   font-family: var(--font-heading), Georgia, serif;
-  font-weight: 300;
+  font-weight: 500;
+  line-height: 1.15;
+  color: var(--cream);
+}
+
+p {
+  line-height: 1.65;
 }
 
 /* Latin-only uppercase eyebrow labels */
@@ -56,18 +65,18 @@ h1, h2, h3, h4 {
   font-family: var(--font-latin), Georgia, serif;
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  font-weight: 300;
+  font-weight: 600;
+  font-size: 13px;
 }
 
 /* ─── Film-grain noise overlay ───────────────────────────────────── */
-/* SVG feTurbulence generates a static grain that sits over everything */
 body::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: 9000;
   pointer-events: none;
-  opacity: 0.038;
+  opacity: 0.032;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)'/%3E%3C/svg%3E");
   background-repeat: repeat;
   background-size: 200px 200px;

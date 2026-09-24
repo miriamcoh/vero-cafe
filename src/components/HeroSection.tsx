@@ -3,172 +3,341 @@
 import { useRef, useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
-import LoadingScreen from "./LoadingScreen";
+import type { ControlsApi } from "./HeroCanvas";
 
-/* Dynamic import — Canvas never runs on the server */
+/* Canvas never runs on the server */
 const HeroCanvas = dynamic(() => import("./HeroCanvas"), { ssr: false });
 
 /* ─────────────────────────────────────────────────────────────────
    HeroSection
-   Layout (desktop):  Canvas fills full height → text in right 48%
-   Layout (mobile):   Canvas 45svh top → text below, scrollable
+
+   Desktop (md+):  CSS grid — 55% canvas left | 45% text right
+   Mobile:         Flex-col — 45svh canvas top | text below
+   Total = 100svh.
+
+   OrbitControls: drag to rotate, autoRotate resumes after 4 s idle.
+   Ctrl / ⌘ + wheel: zoom in/out.
+   Floating buttons: +  −  ↺
+   Usage hint: "גרור לסיבוב" — disappears on first interaction.
 ───────────────────────────────────────────────────────────────── */
 export default function HeroSection() {
-  const mouseRef  = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
-  const [canvasReady, setCanvasReady] = useState(false);
-  const [showCanvas, setShowCanvas]   = useState(false);
+  const controlsApiRef = useRef<ControlsApi | null>(null);
+  const canvasWrapRef  = useRef<HTMLDivElement>(null);
 
-  // Track normalised mouse position (−1…+1 per axis)
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      mouseRef.current = {
-        x: (e.clientX / window.innerWidth)  * 2 - 1,
-        y: (e.clientY / window.innerHeight) * 2 - 1,
-      };
-    };
-    window.addEventListener("mousemove", onMove, { passive: true });
-    return () => window.removeEventListener("mousemove", onMove);
+  const [ready,       setReady]       = useState(false);
+  const [hintVisible, setHintVisible] = useState(false);
+  const [isGrabbing,  setIsGrabbing]  = useState(false);
+  const hintDismissed = useRef(false);
+
+  /* Show hint once the model is ready, auto-hide after 5 s */
+  const handleReady = useCallback(() => {
+    setReady(true);
+    setHintVisible(true);
+    setTimeout(() => setHintVisible(false), 5000);
   }, []);
 
-  const handleCanvasReady = useCallback(() => setCanvasReady(true), []);
-  const handleLoadingDone = useCallback(() => setShowCanvas(true), []);
+  /* Dismiss hint on first interaction */
+  const dismissHint = useCallback(() => {
+    if (hintDismissed.current) return;
+    hintDismissed.current = true;
+    setHintVisible(false);
+  }, []);
 
-  /* Start loading canvas immediately; keep loading screen until both
-     the canvas fires onCreated AND the progress bar has run its course */
-  const loadingDone = canvasReady && showCanvas;
+  /* Ctrl / ⌘ + wheel → zoom */
+  useEffect(() => {
+    const el = canvasWrapRef.current;
+    if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (!e.ctrlKey && !e.metaKey) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.deltaY < 0) controlsApiRef.current?.zoomIn();
+      else              controlsApiRef.current?.zoomOut();
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel);
+  }, []);
+
+  /* Grab cursor */
+  const onPointerDown = useCallback(() => {
+    setIsGrabbing(true);
+    dismissHint();
+  }, [dismissHint]);
+  const onPointerUp = useCallback(() => setIsGrabbing(false), []);
 
   return (
     <section
       dir="ltr"
-      className="relative w-full overflow-hidden"
       style={{
-        background:
-          "radial-gradient(ellipse 110% 80% at 30% 60%, #1A100A 0%, var(--espresso) 65%)",
+        height: "100svh",
+        minHeight: 560,
+        background: "#0E0A08",
+        overflow: "hidden",
       }}
     >
-      {/* ── Loading screen ──────────────────────────────────────── */}
-      <AnimatePresence>
-        {!loadingDone && (
-          <LoadingScreen onDone={handleLoadingDone} />
-        )}
-      </AnimatePresence>
-
-      {/* ── Desktop layout: full-height split ────────────────────── */}
+      {/* Flex-col on mobile → 2-col grid on md+ */}
       <div
-        className="hidden md:block relative"
-        style={{ height: "100svh", minHeight: 560 }}
+        className="flex flex-col md:grid h-full"
+        style={{ gridTemplateColumns: "55% 45%" }}
       >
-        {/* 3-D Canvas — fills the whole section */}
-        <div className="absolute inset-0 z-0">
-          <HeroCanvas mouseRef={mouseRef} onReady={handleCanvasReady} />
-        </div>
 
-        {/* Right-side gradient — gives text legibility without hiding machine */}
+        {/* ── Canvas column ─────────────────────────────────────── */}
         <div
-          className="absolute inset-y-0 right-0 z-[1] pointer-events-none"
+          ref={canvasWrapRef}
+          className="relative flex-shrink-0 h-[45svh] md:h-full"
           style={{
-            width: "56%",
-            background:
-              "linear-gradient(to right, transparent 0%, rgba(14,10,8,0.82) 38%, rgba(14,10,8,0.96) 100%)",
+            background: "#0E0A08",
+            cursor: isGrabbing ? "grabbing" : ready ? "grab" : "default",
           }}
-        />
-
-        {/* Text panel — right 48%, vertically centred */}
-        <DesktopText />
-      </div>
-
-      {/* ── Mobile layout: stacked ───────────────────────────────── */}
-      <div className="md:hidden flex flex-col">
-        {/* Canvas top portion */}
-        <div style={{ height: "48svh", position: "relative" }}>
-          <HeroCanvas mouseRef={mouseRef} onReady={handleCanvasReady} />
-          {/* Bottom fade into background */}
+          onPointerDown={onPointerDown}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerUp}
+        >
+          {/* Poster glow — visible instantly while GLB loads */}
           <div
+            aria-hidden
+            style={{
+              position: "absolute",
+              inset: 0,
+              background:
+                "radial-gradient(ellipse 72% 80% at 48% 60%, #2a1408 0%, #0E0A08 68%)",
+              zIndex: 0,
+            }}
+          />
+
+          {/* Canvas: opacity 0 → 1 once model renders first frame */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: ready ? 1 : 0 }}
+            transition={{ duration: 0.6, ease: "easeOut" }}
+            style={{ position: "absolute", inset: 0, zIndex: 1 }}
+          >
+            <HeroCanvas onReady={handleReady} controlsApiRef={controlsApiRef} />
+          </motion.div>
+
+          {/* Floating orbit controls — +  −  ↺ */}
+          <AnimatePresence>
+            {ready && (
+              <motion.div
+                key="orbit-btns"
+                initial={{ opacity: 0, x: 8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0 }}
+                transition={{ delay: 0.6, duration: 0.5 }}
+                style={{
+                  position: "absolute",
+                  bottom: 20,
+                  right: 16,
+                  zIndex: 10,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 6,
+                  pointerEvents: "all",
+                }}
+              >
+                {ORBIT_BTNS.map(({ icon, label, action }) => (
+                  <OrbitBtn
+                    key={icon}
+                    icon={icon}
+                    ariaLabel={label}
+                    onClick={() => action(controlsApiRef.current)}
+                  />
+                ))}
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Usage hint — "גרור לסיבוב" */}
+          <AnimatePresence>
+            {hintVisible && (
+              <motion.div
+                key="hint"
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -4 }}
+                transition={{ duration: 0.4 }}
+                style={{
+                  position: "absolute",
+                  bottom: 24,
+                  left: "50%",
+                  transform: "translateX(-50%)",
+                  zIndex: 10,
+                  pointerEvents: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 7,
+                  background: "rgba(14,10,8,0.55)",
+                  border: "1px solid rgba(200,161,101,0.12)",
+                  backdropFilter: "blur(8px)",
+                  padding: "6px 14px",
+                  borderRadius: 20,
+                }}
+              >
+                {/* drag icon SVG */}
+                <svg
+                  width="12" height="12"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="rgba(200,161,101,0.55)"
+                  strokeWidth="1.8"
+                  strokeLinecap="round"
+                >
+                  <path d="M5 9l-3 3 3 3M9 5l3-3 3 3M15 19l-3 3-3-3M19 9l3 3-3 3M12 3v18" />
+                </svg>
+                <span
+                  style={{
+                    fontFamily: "var(--font-body)",
+                    fontSize: 11,
+                    color: "rgba(200,161,101,0.55)",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  גרור לסיבוב
+                </span>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Fade edge at the bottom — mobile only */}
+          <div
+            className="md:hidden"
             style={{
               position: "absolute",
               inset: "auto 0 0 0",
-              height: "40%",
-              background:
-                "linear-gradient(to bottom, transparent, var(--espresso))",
+              height: "38%",
+              background: "linear-gradient(to bottom, transparent, #0E0A08)",
               pointerEvents: "none",
+              zIndex: 2,
             }}
           />
         </div>
 
-        {/* Text below canvas */}
-        <MobileText />
+        {/* ── Text column ─────────────────────────────────────────── */}
+        <div
+          dir="rtl"
+          className="flex-1 md:flex-none flex items-center overflow-hidden"
+          style={{
+            background:
+              "linear-gradient(to right, transparent 0%, #0E0A08 20%)",
+            padding:
+              "clamp(20px, 4vw, 56px) clamp(20px, 5vw, 72px) clamp(20px, 4vw, 56px)",
+          }}
+        >
+          <TextContent />
+        </div>
       </div>
+
+      {/* Global hover styles for orbit buttons */}
+      <style>{`
+        .orbit-btn:hover {
+          background: rgba(200,161,101,0.15) !important;
+          border-color: rgba(200,161,101,0.45) !important;
+          color: rgba(200,161,101,0.95) !important;
+        }
+        .orbit-btn:active {
+          background: rgba(200,161,101,0.25) !important;
+        }
+        .hero-cta-primary:hover {
+          background: var(--gold) !important;
+          color: var(--espresso) !important;
+          border-color: var(--gold) !important;
+        }
+        .hero-cta-ghost:hover { color: var(--parchment) !important; }
+      `}</style>
     </section>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Desktop text panel (absolutely positioned in the hero)
+   Orbit button config
 ───────────────────────────────────────────────────────────────── */
-function DesktopText() {
-  return (
-    <div className="absolute inset-0 z-10 flex items-center pointer-events-none">
-      <div className="w-full max-w-7xl mx-auto px-8 md:px-16">
-        <div
-          dir="rtl"
-          className="ml-auto w-full md:w-[48%] flex flex-col items-start pointer-events-auto"
-        >
-          <TextContent />
-        </div>
-      </div>
-    </div>
-  );
-}
+const ORBIT_BTNS = [
+  {
+    icon: "+",
+    label: "הגדל",
+    action: (api: ControlsApi | null) => api?.zoomIn(),
+  },
+  {
+    icon: "−",
+    label: "הקטן",
+    action: (api: ControlsApi | null) => api?.zoomOut(),
+  },
+  {
+    icon: "↺",
+    label: "אפס זווית",
+    action: (api: ControlsApi | null) => api?.reset(),
+  },
+] as const;
 
 /* ─────────────────────────────────────────────────────────────────
-   Mobile text block (in document flow, below the canvas)
+   Floating orbit button
 ───────────────────────────────────────────────────────────────── */
-function MobileText() {
+function OrbitBtn({
+  icon,
+  ariaLabel,
+  onClick,
+}: {
+  icon: string;
+  ariaLabel: string;
+  onClick: () => void;
+}) {
   return (
-    <div
-      dir="rtl"
+    <button
+      aria-label={ariaLabel}
+      onClick={(e) => { e.stopPropagation(); onClick(); }}
+      className="orbit-btn"
       style={{
-        padding: "32px 24px 56px",
-        background: "var(--espresso)",
+        width: 44,
+        height: 44,
+        borderRadius: "50%",
+        background: "rgba(14,10,8,0.6)",
+        border: "1px solid rgba(200,161,101,0.18)",
+        color: "rgba(200,161,101,0.65)",
+        fontSize: 16,
+        cursor: "pointer",
+        backdropFilter: "blur(10px)",
+        WebkitBackdropFilter: "blur(10px)",
         display: "flex",
-        flexDirection: "column",
-        alignItems: "flex-start",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "background 0.2s, border-color 0.2s, color 0.2s",
+        userSelect: "none",
       }}
     >
-      <TextContent />
-    </div>
+      {icon}
+    </button>
   );
 }
 
 /* ─────────────────────────────────────────────────────────────────
-   Shared text content with staggered Framer Motion reveals
+   Text — staggered reveal with animate (not whileInView)
+   so it appears immediately on load without waiting for 3-D.
 ───────────────────────────────────────────────────────────────── */
 function TextContent() {
   return (
-    <>
-      {/* Eyebrow — Latin, letter-spacing OK */}
+    <div style={{ width: "100%", maxWidth: 460 }}>
+
+      {/* Eyebrow */}
       <motion.p
-        initial={{ opacity: 0, y: 14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7, ease: "easeOut" }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: "easeOut", delay: 0.05 }}
         className="eyebrow-latin"
-        style={{ color: "var(--gold)", fontSize: 11, marginBottom: 20 }}
+        style={{ color: "var(--gold)", fontSize: 11, marginBottom: 18 }}
       >
         CAFFÈ VERO · יבואן בלעדי בישראל
       </motion.p>
 
-      {/* Headline — Frank Ruhl Libre (applied via CSS h1 rule) */}
+      {/* Headline */}
       <motion.h1
-        initial={{ opacity: 0, y: 24 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.85, delay: 0.12, ease: "easeOut" }}
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.7, delay: 0.14, ease: "easeOut" }}
         style={{
           color: "var(--cream)",
-          fontSize: "clamp(2rem, 4.5vw, 3.8rem)",
+          fontSize: "clamp(1.9rem, 4.2vw, 3.8rem)",
           lineHeight: 1.15,
-          marginBottom: 20,
+          marginBottom: 18,
           textAlign: "right",
         }}
       >
@@ -180,31 +349,29 @@ function TextContent() {
       {/* Gold rule */}
       <motion.div
         initial={{ opacity: 0, scaleX: 0 }}
-        whileInView={{ opacity: 1, scaleX: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.5, delay: 0.28, ease: "easeOut" }}
+        animate={{ opacity: 1, scaleX: 1 }}
+        transition={{ duration: 0.4, delay: 0.28, ease: "easeOut" }}
         style={{
-          width: 40,
+          width: 36,
           height: 1,
           background: "rgba(200,161,101,0.65)",
           transformOrigin: "right",
-          marginBottom: 20,
+          marginBottom: 18,
         }}
       />
 
       {/* Sub-headline */}
       <motion.p
-        initial={{ opacity: 0, y: 16 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.7, delay: 0.38, ease: "easeOut" }}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.36, ease: "easeOut" }}
         style={{
           color: "var(--parchment)",
-          fontSize: "clamp(13px, 1.3vw, 15px)",
+          fontSize: "clamp(13px, 1.25vw, 15px)",
           fontFamily: "var(--font-body)",
-          maxWidth: 360,
+          maxWidth: 340,
           lineHeight: 1.85,
-          marginBottom: 36,
+          marginBottom: "clamp(22px, 3vh, 34px)",
           textAlign: "right",
         }}
       >
@@ -215,11 +382,10 @@ function TextContent() {
 
       {/* CTAs */}
       <motion.div
-        initial={{ opacity: 0, y: 14 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.65, delay: 0.5, ease: "easeOut" }}
-        style={{ display: "flex", gap: 16, flexWrap: "wrap" }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.46, ease: "easeOut" }}
+        style={{ display: "flex", gap: 14, flexWrap: "wrap" }}
       >
         <button
           data-cursor="pointer"
@@ -228,11 +394,11 @@ function TextContent() {
             background: "transparent",
             border: "1px solid rgba(200,161,101,0.5)",
             color: "var(--gold)",
-            padding: "14px 32px",
-            minHeight: 48,
+            padding: "12px 28px",
+            minHeight: 44,
             fontSize: 12,
             fontFamily: "var(--font-body)",
-            fontWeight: 400,
+            fontWeight: 600,
             cursor: "pointer",
             transition: "background 0.3s ease, color 0.3s ease, border-color 0.3s ease",
           }}
@@ -246,8 +412,8 @@ function TextContent() {
             background: "transparent",
             border: "1px solid transparent",
             color: "var(--muted)",
-            padding: "14px 20px",
-            minHeight: 48,
+            padding: "12px 18px",
+            minHeight: 44,
             fontSize: 12,
             fontFamily: "var(--font-body)",
             fontWeight: 400,
@@ -262,11 +428,10 @@ function TextContent() {
       {/* Scroll hint — desktop only */}
       <motion.div
         initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-        transition={{ duration: 1, delay: 0.85 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 1, delay: 0.9 }}
         className="hidden md:flex flex-col items-start gap-2"
-        style={{ marginTop: 40 }}
+        style={{ marginTop: "clamp(22px, 3.5vh, 44px)" }}
       >
         <span
           style={{
@@ -282,31 +447,11 @@ function TextContent() {
         <div
           style={{
             width: 1,
-            height: 28,
+            height: 26,
             background: "linear-gradient(to bottom, rgba(200,161,101,0.28), transparent)",
           }}
         />
       </motion.div>
-    </>
+    </div>
   );
-}
-
-/* Hover styles for CTA buttons */
-// (applied as global <style> to avoid inline style limitations)
-const _styles = `
-  .hero-cta-primary:hover {
-    background: var(--gold) !important;
-    color: var(--espresso) !important;
-    border-color: var(--gold) !important;
-  }
-  .hero-cta-ghost:hover {
-    color: var(--parchment) !important;
-  }
-`;
-
-// Inject once — works because this module is only loaded client-side
-if (typeof document !== "undefined") {
-  const tag = document.createElement("style");
-  tag.textContent = _styles;
-  document.head.appendChild(tag);
 }

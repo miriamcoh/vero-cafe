@@ -63,7 +63,7 @@ export default function WhyVeroSection() {
           <h2
             style={{
               fontSize: "clamp(1.8rem, 4vw, 3rem)",
-              fontWeight: 300,
+              fontWeight: 500,
               color: "var(--cream)",
               lineHeight: 1.2,
             }}
@@ -115,7 +115,7 @@ export default function WhyVeroSection() {
                 <h3
                   style={{
                     fontSize: "clamp(1rem, 1.8vw, 1.2rem)",
-                    fontWeight: 300,
+                    fontWeight: 500,
                     color: "var(--cream)",
                     marginBottom: 10,
                     lineHeight: 1.3,

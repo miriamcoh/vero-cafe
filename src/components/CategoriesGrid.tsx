@@ -98,7 +98,7 @@ export default function CategoriesGrid() {
           <h2
             style={{
               fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)",
-              fontWeight: 300,
+              fontWeight: 500,
               color: "var(--cream)",
               lineHeight: 1.2,
             }}
@@ -156,7 +156,7 @@ export default function CategoriesGrid() {
                   fontSize: span === "col-span-2"
                     ? "clamp(1.3rem, 2.5vw, 1.8rem)"
                     : "clamp(1.1rem, 2vw, 1.4rem)",
-                  fontWeight: 300,
+                  fontWeight: 500,
                   color: "var(--cream)",
                   lineHeight: 1.2,
                   position: "relative",

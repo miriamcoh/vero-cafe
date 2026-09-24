@@ -74,7 +74,7 @@ export default function BranchesSection() {
               <h2
                 style={{
                   fontSize: "clamp(1.8rem, 4vw, 3rem)",
-                  fontWeight: 300,
+                  fontWeight: 500,
                   color: "var(--cream)",
                   lineHeight: 1.2,
                 }}
@@ -120,7 +120,7 @@ export default function BranchesSection() {
                       style={{
                         fontFamily: "var(--font-body)",
                         fontSize: "clamp(1rem, 2vw, 1.2rem)",
-                        fontWeight: 300,
+                        fontWeight: 400,
                         color: "var(--cream)",
                         lineHeight: 1.3,
                       }}
@@ -192,7 +192,7 @@ export default function BranchesSection() {
                 style={{
                   fontFamily: "var(--font-body)",
                   fontSize: "clamp(1.1rem, 2vw, 1.4rem)",
-                  fontWeight: 300,
+                  fontWeight: 400,
                   color: "var(--cream)",
                   lineHeight: 1.5,
                   marginBottom: 28,

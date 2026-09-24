@@ -117,7 +117,7 @@ function StepText({ step, mobile = false }: { step: Step; mobile?: boolean }) {
         style={{
           fontFamily: "var(--font-latin)",
           fontSize: mobile ? "5rem" : "clamp(5rem, 13vw, 10rem)",
-          fontWeight: 300,
+          fontWeight: 400,
           lineHeight: 0.85,
           color: "rgba(200,161,101,0.05)",
           marginBottom: mobile ? -14 : -18,
@@ -134,7 +134,7 @@ function StepText({ step, mobile = false }: { step: Step; mobile?: boolean }) {
           fontSize: mobile
             ? "clamp(1.5rem, 6vw, 2rem)"
             : "clamp(1.8rem, 4.2vw, 3.5rem)",
-          fontWeight: 300,
+          fontWeight: 500,
           lineHeight: 1.2,
           color: "var(--cream)",
           marginBottom: 18,
@@ -317,7 +317,7 @@ export default function BeanToCupSection() {
                 position: "absolute",
                 fontFamily: "var(--font-latin)",
                 fontSize: "6rem",
-                fontWeight: 300,
+                fontWeight: 400,
                 color: "rgba(200,161,101,0.04)",
                 userSelect: "none",
                 pointerEvents: "none",

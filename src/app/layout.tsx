@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Frank_Ruhl_Libre, Assistant, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import { LenisProvider } from "./LenisProvider";
@@ -6,23 +6,20 @@ import CustomCursor from "@/components/CustomCursor";
 
 /* ─── Fonts ──────────────────────────────────────────────────────── */
 
-// Headline font: elegant Hebrew serif for large display text
 const headingFont = Frank_Ruhl_Libre({
   subsets: ["hebrew", "latin"],
-  weight: ["300", "400", "700"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-heading",
   display: "swap",
 });
 
-// Body font: clean, legible Hebrew sans-serif for body copy
 const bodyFont = Assistant({
   subsets: ["hebrew", "latin"],
-  weight: ["300", "400"],
+  weight: ["400", "500", "600"],
   variable: "--font-body",
   display: "swap",
 });
 
-// Latin display font: Cormorant Garamond for brand names and eyebrow labels
 const latinFont = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["300", "400"],
@@ -50,6 +47,11 @@ export const metadata: Metadata = {
   },
 };
 
+/* ─── Viewport / theme-color ─────────────────────────────────────── */
+export const viewport: Viewport = {
+  themeColor: "#0E0A08",
+};
+
 /* ─── Root layout ────────────────────────────────────────────────── */
 export default function RootLayout({
   children,
@@ -61,6 +63,8 @@ export default function RootLayout({
       lang="he"
       dir="rtl"
       className={`${headingFont.variable} ${bodyFont.variable} ${latinFont.variable} h-full`}
+      // Inline bg prevents ANY white flash before the stylesheet is parsed
+      style={{ backgroundColor: "#0E0A08" }}
     >
       <body className="min-h-full antialiased">
         <LenisProvider>

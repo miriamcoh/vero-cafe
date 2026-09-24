@@ -70,7 +70,7 @@ export default function Header() {
           </div>
           <span
             className="eyebrow-latin"
-            style={{ color: "var(--parchment)", fontWeight: 300, fontSize: 12 }}
+            style={{ color: "var(--parchment)", fontWeight: 400, fontSize: 12 }}
           >
             CAFFÈ VERO
           </span>
@@ -244,7 +244,7 @@ export default function Header() {
                   display: "block",
                   color: "var(--cream)",
                   fontSize: "clamp(1.6rem, 6vw, 2.2rem)",
-                  fontWeight: 300,
+                  fontWeight: 400,
                   textDecoration: "none",
                   padding: "10px 0",
                   borderBottom: "1px solid var(--layer-2)",

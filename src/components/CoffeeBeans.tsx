@@ -5,7 +5,7 @@ import { useFrame } from "@react-three/fiber";
 import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 
-const COUNT = 40;
+const COUNT = 22;
 
 // roughness:1 + metalness:0 + envMapIntensity:0 → fully matte, absorbs
 // light instead of reflecting it, so no highlight can wash the colour out.
@@ -76,9 +76,9 @@ export default function CoffeeBeans({ scrollProgressRef }: Props = {}) {
   const transforms = useMemo(
     () =>
       Array.from({ length: COUNT }, () => ({
-        x:      (Math.random() - 0.5) * 16,   // wide — fills both sides of screen
-        y:      (Math.random() - 0.5) * 8,    // tall — above and below machine
-        z:      (Math.random() - 0.5) * 5.5 - 0.5, // –3.25 … +2.25 — front & back
+        x:      (Math.random() - 0.5) * 2.6,  // ±1.3 — within canvas visible range
+        y:      (Math.random() - 0.5) * 3.0,  // ±1.5 — above and below machine
+        z:      (Math.random() - 0.5) * 2.5 - 0.3, // vary depth, slightly behind machine
         rotX:   Math.random() * Math.PI * 2,
         rotY:   Math.random() * Math.PI * 2,
         rotZ:   Math.random() * Math.PI * 2,

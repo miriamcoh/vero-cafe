@@ -84,7 +84,7 @@ export default function BusinessSection() {
             <h2
               style={{
                 fontSize: "clamp(1.8rem, 4vw, 3rem)",
-                fontWeight: 300,
+                fontWeight: 500,
                 color: "var(--cream)",
                 lineHeight: 1.2,
                 marginBottom: 20,
@@ -193,7 +193,7 @@ export default function BusinessSection() {
                     style={{
                       fontFamily: "var(--font-body)",
                       fontSize: "clamp(1.1rem, 2vw, 1.3rem)",
-                      fontWeight: 300,
+                      fontWeight: 400,
                       color: "var(--cream)",
                     }}
                   >

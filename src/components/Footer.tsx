@@ -65,7 +65,7 @@ export default function Footer() {
               </div>
               <span
                 className="eyebrow-latin"
-                style={{ color: "var(--parchment)", fontWeight: 300, fontSize: 11 }}
+                style={{ color: "var(--parchment)", fontWeight: 400, fontSize: 11 }}
               >
                 CAFFÈ VERO
               </span>

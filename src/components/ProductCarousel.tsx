@@ -132,7 +132,7 @@ export default function ProductCarousel() {
             <h2
               style={{
                 fontSize: "clamp(1.6rem, 3.5vw, 2.8rem)",
-                fontWeight: 300,
+                fontWeight: 500,
                 color: "var(--cream)",
                 lineHeight: 1.2,
               }}
@@ -291,7 +291,7 @@ export default function ProductCarousel() {
                     style={{
                       fontFamily: "var(--font-latin)",
                       fontSize: 18,
-                      fontWeight: 300,
+                      fontWeight: 400,
                       color: "var(--gold)",
                       letterSpacing: "0.02em",
                     }}

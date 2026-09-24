@@ -133,7 +133,7 @@ export default function BialettiSection() {
           <h2
             style={{
               fontSize: "clamp(1.8rem, 4vw, 3rem)",
-              fontWeight: 300,
+              fontWeight: 500,
               color: "var(--cream)",
               lineHeight: 1.2,
               marginBottom: 14,
